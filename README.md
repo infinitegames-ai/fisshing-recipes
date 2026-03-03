@@ -1,5 +1,9 @@
 # fisshing-recipes
 
+<img src="https://github.com/user-attachments/assets/497e5225-811b-48e7-a522-8e987330c1af" width="640px" />
+
+<hr>
+
 Ready-to-use integrations for [fisshing](https://fisshing.net) — the fishing game that lives in your terminal. The fisshing developer API lets you send notifications to your phone, activate a spinner while tasks run, and build stream overlays. This repo has copy-paste recipes for shells, CI, editors, cron jobs, and OBS.
 
 ## Setup
