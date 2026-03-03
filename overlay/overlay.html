@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>fisshing overlay</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+    }
+    .catch-card {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      border-left: 4px solid #4ade80;
+      border-radius: 8px;
+      padding: 16px 20px;
+      max-width: 360px;
+      animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 4.5s forwards;
+      z-index: 1000;
+    }
+    .catch-card pre {
+      font-size: 10px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+      color: #d1d5db;
+      white-space: pre;
+    }
+    .catch-card strong {
+      font-size: 16px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .catch-card .details {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!--
+    fisshing OBS overlay — self-contained browser source
+
+    Setup:
+      1. Get your API key from https://fisshing.net/docs
+      2. Replace YOUR_API_KEY below with your key
+      3. In OBS: Sources > Add > Browser
+         - Check "Local file" OFF
+         - Paste this file's path or host it and use the URL
+         - Set width/height to match your canvas (e.g. 1920x1080)
+         - Check "Shutdown source when not visible"
+
+    Features:
+      - Connects to fisshing via WebSocket (auto-reconnects)
+      - Renders catch cards with ASCII art, species, weight, and rarity
+      - Cards slide in from the right and fade out after 5 seconds
+      - Transparent background — layer over your stream
+  -->
+  <script>
+    const API_KEY = "YOUR_API_KEY";
+    const url = "wss://fisshing.net/socket/overlay"
+      + "?token=" + API_KEY + "&vsn=2.0.0";
+
+    let ref = 0;
+    const nextRef = () => String(++ref);
+
+    function connect() {
+      const ws = new WebSocket(url);
+
+      ws.onopen = () => {
+        ws.send(JSON.stringify(
+          [nextRef(), nextRef(), "overlay:lobby", "phx_join", {}]
+        ));
+      };
+
+      ws.onmessage = (msg) => {
+        const [joinRef, msgRef, topic, event, payload] = JSON.parse(msg.data);
+        if (event === "game_event") {
+          renderEvent(payload);
+        }
+      };
+
+      ws.onclose = () => setTimeout(connect, 3000);
+    }
+
+    function renderEvent({ event, data }) {
+      if (event === "catch") {
+        const el = document.createElement("div");
+        el.className = "catch-card";
+        el.style.borderColor = data.color || "#4ade80";
+        el.innerHTML = "<pre>" + (data.ascii_art || "") + "</pre>"
+          + "<strong>" + data.species + "</strong>"
+          + "<span class='details'>"
+          + data.weight + " lb &mdash; " + data.rarity
+          + "</span>";
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 5000);
+      }
+    }
+
+    connect();
+  </script>
+</body>
+</html>

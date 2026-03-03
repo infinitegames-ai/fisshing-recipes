@@ -1,0 +1,23 @@
+# backup-monitor.cron — Crontab entry for backup monitoring with fisshing notifications
+#
+# Setup:
+#   1. Set FISSHING_API_KEY in your environment (see note below)
+#   2. Edit /path/to/backup.sh to point to your actual backup script
+#   3. Install with: crontab -e  (paste the line below)
+#
+# Note:
+#   cron does not load shell profiles, so either:
+#   - Hardcode the key in the curl commands below, or
+#   - Source your env in the backup script itself
+#
+# Runs every 6 hours:
+
+0 */6 * * * /path/to/backup.sh && \
+  curl -s -X POST https://fisshing.net/api/notify \
+    -H "Authorization: Bearer $FISSHING_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{"message":"Backup complete","source":"cron","alert_level":"success"}' \
+  || curl -s -X POST https://fisshing.net/api/notify \
+    -H "Authorization: Bearer $FISSHING_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{"message":"Backup failed!","source":"cron","alert_level":"error"}'

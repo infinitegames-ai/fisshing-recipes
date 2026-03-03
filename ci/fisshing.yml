@@ -1,0 +1,38 @@
+# fisshing.yml — GitHub Actions workflow steps for fisshing notifications
+#
+# Setup:
+#   1. Add FISSHING_KEY to your repo secrets (Settings > Secrets > Actions)
+#   2. Copy the steps below into your .github/workflows/ci.yml job
+#
+# Usage:
+#   These steps activate the fisshing spinner during CI, then send
+#   a pass/fail notification when the job finishes.
+
+# --- paste into your job's `steps:` ---
+
+- name: Fisshing spinner on
+  run: |
+    curl -s -X POST https://fisshing.net/api/status \
+      -H "Authorization: Bearer ${{ secrets.FISSHING_KEY }}" \
+      -H "Content-Type: application/json" \
+      -d '{"active": true}'
+
+- name: Run tests
+  run: npm test  # or: mix test, pytest, cargo test
+
+- name: Fisshing report
+  if: always()
+  run: |
+    if [ "${{ job.status }}" = "success" ]; then
+      AL=success; MSG="CI passed"
+    else
+      AL=error; MSG="CI failed"
+    fi
+    curl -s -X POST https://fisshing.net/api/notify \
+      -H "Authorization: Bearer ${{ secrets.FISSHING_KEY }}" \
+      -H "Content-Type: application/json" \
+      -d "{\"message\":\"$MSG\",\"source\":\"GitHub\",\"alert_level\":\"$AL\"}"
+    curl -s -X POST https://fisshing.net/api/status \
+      -H "Authorization: Bearer ${{ secrets.FISSHING_KEY }}" \
+      -H "Content-Type: application/json" \
+      -d '{"active": false}'

@@ -1,0 +1,47 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST https://fisshing.net/api/status -H 'Authorization: Bearer '\"$FISSHING_API_KEY\" -H 'Content-Type: application/json' -d '{\"active\": true}'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST https://fisshing.net/api/notify -H 'Authorization: Bearer '\"$FISSHING_API_KEY\" -H 'Content-Type: application/json' -d '{\"message\": \"Attention required\", \"source\": \"Claude Code\"}'"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST https://fisshing.net/api/notify -H 'Authorization: Bearer '\"$FISSHING_API_KEY\" -H 'Content-Type: application/json' -d '{\"message\": \"Permission required\", \"source\": \"Claude Code\"}'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST https://fisshing.net/api/notify -H 'Authorization: Bearer '\"$FISSHING_API_KEY\" -H 'Content-Type: application/json' -d '{\"message\": \"Agent stopped\", \"source\": \"Claude Code\"}' && curl -s -X POST https://fisshing.net/api/status -H 'Authorization: Bearer '\"$FISSHING_API_KEY\" -H 'Content-Type: application/json' -d '{\"active\": false}'"
+          }
+        ]
+      }
+    ]
+  }
+}
