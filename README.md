@@ -1,6 +1,6 @@
 # fisshing-recipes
 
-<img src="https://github.com/user-attachments/assets/497e5225-811b-48e7-a522-8e987330c1af" width="640px" />
+<img src="/whale-shark-og.gif" width="640px" />
 
 <hr>
 
